@@ -9,8 +9,9 @@ var define,require;
 		baseUrl:null
 	}
 	
-	var requireCallback,requireDeps,requireDepsCopy=[],requireCallbackCalled=false;
+	var requireCallback,requireDeps,requireDepsCopy,requireCallbackCalled;
 	require = function(deps,callback){
+		requireDepsCopy = [];
 		each(deps,function(depId){
 			loadModule(depId);
 			requireDepsCopy.push(depId);
@@ -35,7 +36,7 @@ var define,require;
 					parentMap[depId] = [id];
 				}
 				loadModule(depId,function(){
-					if(modules[id].state!==DEFINED){
+					if(modules&&modules[id].state!==DEFINED){
 						tryDefine(id);
 					}
 				});
@@ -56,6 +57,9 @@ var define,require;
 				}
 				if(requireDeps.length===0&&!requireCallbackCalled){
 					requireCallback.apply(global,getDepsExports(requireDepsCopy));
+					requireCallbackCalled = true;
+					modules = null;
+					parentMap = null;
 				}
 			}
 		}
@@ -134,7 +138,6 @@ var define,require;
 			) {
 				script.onload = script.onreadystatechange = null;
 				script = null;
-
 				onload();
 			}
 		}
